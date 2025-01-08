@@ -1,5 +1,6 @@
 ---
 description: Here, we provide the required steps in order to install TMLL on your machine.
+icon: folder-arrow-down
 ---
 
 # Installation
