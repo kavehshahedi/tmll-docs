@@ -5,3 +5,4 @@
 ## Getting Started
 
 * [Installation](getting-started/installation.md)
+* [Quickstart](getting-started/quickstart.md)
