@@ -341,3 +341,50 @@ lag_analysis = ca.analyze_lags(series1_name="Histogram", series2_name="Memory Us
 ```
 
 <figure><img src="../.gitbook/assets/correlation_analysis_lag_analysis.png" alt=""><figcaption><p>The lag analysis between the histogram (number of events at each timestamp) and memory usage indicates a lag of -1 (or +1 when comparing memory usage to the histogram). This suggests a one-unit timestamp difference in the impact of one component on the other.</p></figcaption></figure>
+
+## Performance Trend Analysis
+
+Programs can experience performance shifts, behavioral changes, or unexpected regressions. Identifying these trends can be challenging, especially when dealing with numerous system components. The modules in this group are designed to uncover performance trends in trace data that traditional analyses might overlook.
+
+### Change Point Detection
+
+This module detects moments when the statistical properties of a system metric change significantly, helping users identify sudden shifts in performance metrics such as CPU usage spikes or increased latency. Additionally, by aggregating different metrics (e.g., using PCA, Z-score, or voting), TMLL can more effectively pinpoint significant change points that may be difficult to identify through manual analysis of trace data.
+
+#### Initializing the Module
+
+```python
+# Import the module
+from tmll.ml.modules.performance_trend.change_point_module import ChangePointAnalysis
+
+# Get the outputs of CPU, Memory, Disk usage, and Histogram (i.e., number of events in each timestamp)
+outputs = experiment.find_outputs(keyword=['cpu usage', 'memory usage', 'disk', 'histogram'], type=['xy'], match_any=True)
+
+# Initialize the module
+cpa = ChangePointAnalysis(client, experiment, outputs)
+```
+
+#### Indicate the Change Points
+
+You can pinpoint the significant change points based on different parameters.
+
+```python
+# Find the top-2 change points in the data
+# Since we are using tune_hyperparameters, all the optional params are indicated automatically
+change_points = cpa.get_change_points(n_change_points=2, tune_hyperparameters=True)
+```
+
+#### Plotting the Change Points
+
+<figure><img src="../.gitbook/assets/change_point_cpu.png" alt=""><figcaption><p>Top-2 significant change points for CPU usage (individually).</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/change_point_disk.png" alt=""><figcaption><p>Top-2 significant change points for Disk usage (individually).</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/change_point_histogram.png" alt=""><figcaption><p>Top-2 significant change points for Histogram (number of events) (individually).</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/change_point_memory.png" alt=""><figcaption><p>Top-2 significant change points for Memory usage (individually).</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/change_point_zscore.png" alt=""><figcaption><p>Top-2 significant change points the aggregation of metrics using Z-Score.</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/change_point_voting.png" alt=""><figcaption><p>Top-2 significant change points the aggregation of metrics using Voting.</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/change_point_pca.png" alt=""><figcaption><p>Top-2 significant change points the aggregation of metrics using PCA.</p></figcaption></figure>
