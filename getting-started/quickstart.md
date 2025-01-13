@@ -1,6 +1,6 @@
 ---
-description: Let's see how we can use TMLL modules quickly!
 icon: bolt-lightning
+description: Let's see how we can use TMLL modules quickly!
 ---
 
 # Quickstart
@@ -75,7 +75,7 @@ for output in experiment.outputs:
   print(f'ID: {output.id}') # ID of the output
 
 # Assuming your trace data already has information on "CPU Usage" and "Disk Usage"
-outputs = experiment.find_outputs(keyword=['cpu', 'disk'], type=['xy'], match_any=True)
+outputs = experiment.find_outputs(keyword=['cpu usage', 'disk'], type=['xy'], match_any=True)
 
 # Initialize the module
 ad = AnomalyDetection(client=client, experiment=experiment, outputs=outputs, # Required params
@@ -281,3 +281,63 @@ mld.interpret(mem_leaks)
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
+## Root Cause Analysis
+
+In the event of unexpected behaviors, the modules in this group can assist in identifying their root causes. This allows you to understand the causality and correlation between system components and their behavior over time.
+
+### Correlation Analysis
+
+System components often influence each other's behavior, creating a chain of interdependent actions. For example, a CPU spike at a specific timestamp might result from a particular disk activity operation. This module enables you to analyze and understand the correlations between system components.
+
+#### Initializing the Module
+
+```python
+# Import the module
+from tmll.ml.modules.root_cause.correlation_analysis_module import CorrelationAnalysis
+
+# Get the outputs of CPU, Memory, Disk usage, and Histogram (i.e., number of events in each timestamp)
+outputs = experiment.find_outputs(keyword=['cpu usage', 'memory usage', 'disk', 'histogram'], type=['xy'], match_any=True)
+
+# Initialize the module
+ca = CorrelationAnalysis(client, experiment, outputs)
+```
+
+#### Finding the Correlations
+
+TMLL automatically selects an appropriate correlation methodology (e.g., Pearson, Spearman, or Kendall) based on the characteristics of the data distributions. This allows you to determine the correlation for each pair of system components according to their specific attributes.
+
+```python
+# Analyze the correlations
+correlations = ca.analyze_correlations()
+
+# You may also indicate specific start/end times to
+# analyze the correlations only during that period
+correlations = ca.analyze_correlations(start_time=pd.Timestamp("2025-01-01 18:00:00"),
+                                       end_time=pd.Timestamp("2025-01-01 18:30:00"))
+```
+
+#### Plotting the Correlation Matrix
+
+```
+ca.plot_correlation_matrix(correlations)
+```
+
+<figure><img src="../.gitbook/assets/correlation_analysis_correlation_matrix.png" alt=""><figcaption><p>The correlation matrix for various metrics over the entire trace period shows that CPU and disk usage have a high positive correlation, memory usage and histogram exhibit a moderate positive correlation, and the remaining components have minimal impact on each other.</p></figcaption></figure>
+
+You can also generate a time-series plot comparison for the metrics to observe their behaviors over time.
+
+```python
+ca.plot_time_series(series=["CPU Usage", "Memory Usage", "Histogram", "Disk I/O View"])
+```
+
+<figure><img src="../.gitbook/assets/correlation_analysis_time_series.png" alt=""><figcaption><p>Time-series plot for different system components over time.</p></figcaption></figure>
+
+#### Correlation Lag Analysis
+
+The impact of different system components may occur with a delay, resembling a chain of actions where one component influences another step by step. For example, a spike in CPU usage might lead to an increase in memory usage after a short delay, rather than both events occurring simultaneously. TMLL provides an option to identify the lag between each component.
+
+```python
+lag_analysis = ca.analyze_lags(series1_name="Histogram", series2_name="Memory Usage", max_lag=10)
+```
+
+<figure><img src="../.gitbook/assets/correlation_analysis_lag_analysis.png" alt=""><figcaption><p>The lag analysis between the histogram (number of events at each timestamp) and memory usage indicates a lag of -1 (or +1 when comparing memory usage to the histogram). This suggests a one-unit timestamp difference in the impact of one component on the other.</p></figcaption></figure>
