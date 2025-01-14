@@ -49,7 +49,7 @@ experiment = client.create_experiment(traces=[
 
 From this point forward, we will pass the `client` and `experiment` objects to the modules we want to use. To clarify, the `client` is responsible for communicating with the Trace Server, while the `experiment` handles various trace outputs (e.g., CPU and memory usage, flame charts, graphs, etc.).
 
-## Anomaly Detection
+## [Anomaly Detection](#user-content-fn-1)[^1]
 
 This group includes modules designed to identify abnormal data points (i.e., timestamps), with each module offering insights into anomalies from different perspectives.
 
@@ -57,7 +57,7 @@ This group includes modules designed to identify abnormal data points (i.e., tim
 TMLL does not guarantee that the identified data points are actual anomalies within the system, as it lacks access to the system's contextual information and cannot distinguish between normal and abnormal data points due to the unlabeled nature of trace files. Instead, TMLL uses statistical procedures and calculations to highlight data points that behave significantly differently from the rest, making them strong candidates for further investigation.
 {% endhint %}
 
-### Anomaly Detection
+### [Anomaly Detection](#user-content-fn-2)[^2]
 
 The goal is to identify data points or time periods that deviate significantly from the system's general behavior.
 
@@ -86,19 +86,19 @@ ad = AnomalyDetection(client=client, experiment=experiment, outputs=outputs, # R
 
 Currently, TMLL supports the following methods to pinpoint anomalies in the trace data:
 
-* **zscore**: Identifies anomalies based on how many standard deviations a data point is from the mean.
+* [**zscore**](#user-content-fn-3)[^3]: Identifies anomalies based on how many standard deviations a data point is from the mean.
 
 ```python
 anomalies = ad.find_anomalies(method='zscore', zscore_threshold=3.5)
 ```
 
-* **iqr**: Detects anomalies by finding data points that lie outside the interquartile range (IQR).
+* [**iqr**](#user-content-fn-4)[^4]: Detects anomalies by finding data points that lie outside the interquartile range (IQR).
 
 ```python
 anomalies = ad.find_anomalies(method='iqr')
 ```
 
-* **moving\_average**: Flags anomalies based on deviations from a smoothed average over a moving window.
+* [**moving\_average**](#user-content-fn-5)[^5]: Flags anomalies based on deviations from a smoothed average over a moving window.
 
 ```python
 anomalies = ad.find_anomalies(method='moving_average',
@@ -114,7 +114,7 @@ anomalies = ad.find_anomalies(method='combined',
                               zscore_threshold=3)
 ```
 
-* **iforest**: Uses the Isolation Forest algorithm to isolate and identify anomalous data points.
+* [**iforest**](#user-content-fn-6)[^6]: Uses the Isolation Forest algorithm to isolate and identify anomalous data points.
 
 ```python
 anomalies = ad.find_anomalies(method='iforest',
@@ -123,7 +123,7 @@ anomalies = ad.find_anomalies(method='iforest',
                               iforest_random_state=42)
 ```
 
-* **seasonality**: Detects anomalies by identifying deviations from expected seasonal patterns in the data. This should mostly be used for seasonal data, such as the systems' periodic tasks.
+* [**seasonality**](#user-content-fn-7)[^7]: Detects anomalies by identifying deviations from expected seasonal patterns in the data. This should mostly be used for seasonal data, such as the systems' periodic tasks.
 
 ```python
 anomalies = ad.find_anomalies(method='seasonality',
@@ -147,7 +147,7 @@ ad.plot_anomalies(anomalies, fig_size=(15,4), fig_dpi=300)
 
 <figure><img src="../.gitbook/assets/anomaly_detection_combined_pca.png" alt=""><figcaption><p>The combination of CPU and disk usage (analyzed using PCA) over time revealed three significant anomaly periods (consistent anomaly points within specific time intervals) and several isolated anomaly points.</p></figcaption></figure>
 
-### Memory Leak Detection
+### [Memory Leak Detection](#user-content-fn-8)[^8]
 
 Poor memory management strategies can lead to memory leaks, causing significant damage to the system as the program runs for extended periods. This module focuses on identifying and highlighting issues such as unfreed allocated memory pointers or steadily increasing memory usage for the user.
 
@@ -164,11 +164,10 @@ mld = MemoryLeakDetection(client=client, experiment=experiment)
 
 #### Indicating the Memory Leaks
 
-```python
-mem_leaks = mld.analyze_memory_leaks(window_size='1s', # The window size for trend analysis
-                                     fragmentation_threshold=0.70, # The threshold for memory fragmentation (%)
+<pre class="language-python"><code class="lang-python">mem_leaks = mld.analyze_memory_leaks(window_size='1s', # The window size for trend analysis
+                                     fragmentation_threshold=0.70, # The threshold for memory <a data-footnote-ref href="#user-content-fn-9">fragmentation</a> (%)
                                      slope_threshold=0.5) # The threshold for memory growth slope (linear regression)
-```
+</code></pre>
 
 #### Plotting the Results
 
@@ -176,7 +175,7 @@ mem_leaks = mld.analyze_memory_leaks(window_size='1s', # The window size for tre
 mld.plot_memory_leak_analysis(mem_leaks)
 ```
 
-<figure><img src="../.gitbook/assets/memory_usage.png" alt=""><figcaption><p>Memory usage over time is displayed alongside a trend line derived from a linear regression model.</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/memory_leak_memory_usage.png" alt=""><figcaption><p>Memory usage over time is displayed alongside a trend line derived from a linear regression model.</p></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/memory_operations.png" alt=""><figcaption><p>Memory operations over time, illustrating the number of allocation and deallocation operations performed.</p></figcaption></figure>
 
@@ -281,11 +280,11 @@ mld.interpret(mem_leaks)
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
-## Root Cause Analysis
+## [Root Cause Analysis](#user-content-fn-10)[^10]
 
 In the event of unexpected behaviors, the modules in this group can assist in identifying their root causes. This allows you to understand the causality and correlation between system components and their behavior over time.
 
-### Correlation Analysis
+### [Correlation Analysis](#user-content-fn-11)[^11]
 
 System components often influence each other's behavior, creating a chain of interdependent actions. For example, a CPU spike at a specific timestamp might result from a particular disk activity operation. This module enables you to analyze and understand the correlations between system components.
 
@@ -304,7 +303,7 @@ ca = CorrelationAnalysis(client, experiment, outputs)
 
 #### Finding the Correlations
 
-TMLL automatically selects an appropriate correlation methodology (e.g., Pearson, Spearman, or Kendall) based on the characteristics of the data distributions. This allows you to determine the correlation for each pair of system components according to their specific attributes.
+TMLL automatically selects an appropriate correlation methodology (e.g., Pearson[^12], Spearman[^13], or Kendall[^14]) based on the characteristics of the data distributions. This allows you to determine the correlation for each pair of system components according to their specific attributes.
 
 ```python
 # Analyze the correlations
@@ -316,7 +315,7 @@ correlations = ca.analyze_correlations(start_time=pd.Timestamp("2025-01-01 18:00
                                        end_time=pd.Timestamp("2025-01-01 18:30:00"))
 ```
 
-#### Plotting the Correlation Matrix
+#### Plotting the [Correlation Matrix](#user-content-fn-15)[^15]
 
 ```
 ca.plot_correlation_matrix(correlations)
@@ -332,7 +331,7 @@ ca.plot_time_series(series=["CPU Usage", "Memory Usage", "Histogram", "Disk I/O 
 
 <figure><img src="../.gitbook/assets/correlation_analysis_time_series.png" alt=""><figcaption><p>Time-series plot for different system components over time.</p></figcaption></figure>
 
-#### Correlation Lag Analysis
+#### [Correlation Lag Analysis](#user-content-fn-16)[^16]
 
 The impact of different system components may occur with a delay, resembling a chain of actions where one component influences another step by step. For example, a spike in CPU usage might lead to an increase in memory usage after a short delay, rather than both events occurring simultaneously. TMLL provides an option to identify the lag between each component.
 
@@ -342,13 +341,13 @@ lag_analysis = ca.analyze_lags(series1_name="Histogram", series2_name="Memory Us
 
 <figure><img src="../.gitbook/assets/correlation_analysis_lag_analysis.png" alt=""><figcaption><p>The lag analysis between the histogram (number of events at each timestamp) and memory usage indicates a lag of -1 (or +1 when comparing memory usage to the histogram). This suggests a one-unit timestamp difference in the impact of one component on the other.</p></figcaption></figure>
 
-## Performance Trend Analysis
+## [Performance Trend Analysis](#user-content-fn-17)[^17]
 
 Programs can experience performance shifts, behavioral changes, or unexpected regressions. Identifying these trends can be challenging, especially when dealing with numerous system components. The modules in this group are designed to uncover performance trends in trace data that traditional analyses might overlook.
 
-### Change Point Detection
+### [Change Point Detection](#user-content-fn-18)[^18]
 
-This module detects moments when the statistical properties of a system metric change significantly, helping users identify sudden shifts in performance metrics such as CPU usage spikes or increased latency. Additionally, by aggregating different metrics (e.g., using PCA, Z-score, or voting), TMLL can more effectively pinpoint significant change points that may be difficult to identify through manual analysis of trace data.
+This module detects moments when the statistical properties of a system metric change significantly, helping users identify sudden shifts in performance metrics such as CPU usage spikes or increased latency. Additionally, by aggregating different metrics (e.g., using PCA[^19], Z-score[^20], or voting[^21]), TMLL can more effectively pinpoint significant change points that may be difficult to identify through manual analysis of trace data.
 
 #### Initializing the Module
 
@@ -389,11 +388,11 @@ change_points = cpa.get_change_points(n_change_points=2, tune_hyperparameters=Tr
 
 <figure><img src="../.gitbook/assets/change_point_pca.png" alt=""><figcaption><p>Top-2 significant change points the aggregation of metrics using PCA.</p></figcaption></figure>
 
-## Predictive Maintenance
+## [Predictive Maintenance](#user-content-fn-22)[^22]
 
 The future characteristics of a system often depend on its historical behavior. By leveraging this historical data, it becomes possible to predict various aspects of the system's future, helping to prevent unexpected issues. This group includes features such as forecasting upcoming resource usage, building performance models to detect regressions, creating alarm systems, and more.
 
-### Capacity Planning (Forecasting)
+### [Capacity Planning (Forecasting)](#user-content-fn-23)[^23]
 
 The performance characteristics of system resources (i.e., CPU, memory, and disk usage) are fundamental to the overall system performance. These characteristics must remain stable, as unexpected increases in resource usage can lead to performance regressions. This module is designed to forecast the future usage of various system resources based on their historical observations and report any violations to you.
 
@@ -410,7 +409,7 @@ cp = CapacityPlanning(client, experiment)
 
 #### Forecasting the Resources Usage
 
-To forecast different system components (e.g., CPU, memory, and disk usage), you can optionally specify custom threshold values for each resource. These thresholds define the maximum acceptable usage for each resource. If the forecast predicts usage exceeding the threshold, the module will flag it as a violation. If this violation persists beyond a defined time period (e.g., 10 ms, 15 minutes, 1 hour, etc.), it will be raised as an alarm. You can choose from various forecasting methods, including AutoRegressive Integrated Moving Average (ARIMA), Vector AutoRegressive (VAR), or Moving Average.
+To forecast different system components (e.g., CPU, memory, and disk usage), you can optionally specify custom threshold values for each resource. These thresholds define the maximum acceptable usage for each resource. If the forecast predicts usage exceeding the threshold, the module will flag it as a violation. If this violation persists beyond a defined time period (e.g., 10 ms, 15 minutes, 1 hour, etc.), it will be raised as an alarm. You can choose from various forecasting methods, including [AutoRegressive Integrated Moving Average (ARIMA)](#user-content-fn-24)[^24], [Vector AutoRegressive (VAR)](#user-content-fn-25)[^25], or [Moving Average](#user-content-fn-26)[^26].
 
 ```python
 forecasts = cp.forecast_capacity(method="moving_average", # Which method to use
@@ -641,13 +640,13 @@ cp.interpret(forecasts)
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
 
-## Resource Optimization
+## [Resource Optimization](#user-content-fn-27)[^27]
 
 System resources such as CPU, memory, and disk I/O are fundamental components that directly impact overall system performance. Inefficient resource utilization can lead to various issues, including performance bottlenecks, increased latency, and unnecessary costs. The modules in this group help identify underutilized resources and provide optimization recommendations to improve system efficiency. This includes analyzing idle periods of different resources, detecting load imbalances, and more.
 
-### Idle Resource Detection
+### [Idle Resource Detection](#user-content-fn-28)[^28]
 
-Each system resource may experience idle periods, which are generally normal. However, if these idle periods exceed a specific duration, it may indicate that the resources are underutilized and could require adjustments. This module analyzes the idle status of each system resource individually and provides a more detailed analysis of CPU scheduling.
+Each system resource may experience idle periods, which are generally normal. However, if these idle periods exceed a specific duration, it may indicate that the resources are underutilized and could require adjustments. This module analyzes the idle status of each system resource individually and provides a more detailed analysis of [CPU scheduling](#user-content-fn-29)[^29].
 
 #### Initializing the Module
 
@@ -689,7 +688,7 @@ ird.plot_resource_utilization(res_idle)
 
 #### Analyzing CPU Scheduling
 
-In addition to general idle resource analysis, this module provides a detailed analysis of CPU scheduling, offering insights into the characteristics of each CPU core. You can identify the most resource-intensive processes or tasks on each core, the number of context switches performed, how load balancing was managed among the cores, and more.
+In addition to general idle resource analysis, this module provides a detailed analysis of CPU scheduling, offering insights into the characteristics of each CPU core. You can identify the most resource-intensive processes or tasks on each core, the number of [context switches](#user-content-fn-30)[^30] performed, how [load balancing](#user-content-fn-31)[^31] was managed among the cores, and more.
 
 ```python
 res_sched = ird.analyze_cpu_scheduling()
@@ -1015,3 +1014,65 @@ ird.interpret(res_idle, res_sched)
 │                                                                              │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
+
+[^1]: [Reference](https://en.wikipedia.org/wiki/Anomaly_detection)
+
+[^2]: [Reference](https://en.wikipedia.org/wiki/Anomaly_detection)
+
+[^3]: [Reference](https://en.wikipedia.org/wiki/Standard_score)
+
+[^4]: [Reference](https://en.wikipedia.org/wiki/Interquartile_range)
+
+[^5]: [Reference](https://en.wikipedia.org/wiki/Moving_average)
+
+[^6]: [Reference](https://en.wikipedia.org/wiki/Isolation_forest)
+
+[^7]: [Reference](https://en.wikipedia.org/wiki/Seasonality)
+
+[^8]: [Reference](https://en.wikipedia.org/wiki/Memory_leak)
+
+[^9]: [Reference](https://en.wikipedia.org/wiki/Memory_fragmentation)
+
+[^10]: [Reference](https://en.wikipedia.org/wiki/Root_cause_analysis)
+
+[^11]: [Reference](https://en.wikipedia.org/wiki/Correlation)
+
+[^12]: [Reference](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient)
+
+[^13]: [Reference](https://en.wikipedia.org/wiki/Spearman's_rank_correlation_coefficient)
+
+[^14]: [Reference](https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient)
+
+[^15]: [Reference](https://en.wikipedia.org/wiki/Correlation#Correlation_matrices)
+
+[^16]: [Reference](https://en.wikipedia.org/wiki/Autocorrelation)
+
+[^17]: [Reference](https://en.wikipedia.org/wiki/Trend_analysis)
+
+[^18]: [Reference](https://en.wikipedia.org/wiki/Change_detection)
+
+[^19]: [Reference](https://en.wikipedia.org/wiki/Principal_component_analysis)
+
+[^20]: [Reference](https://en.wikipedia.org/wiki/Standard_score)
+
+[^21]: [Reference](https://en.wikipedia.org/wiki/Weighted_majority_algorithm_\(machine_learning\))
+
+[^22]: [Reference](https://en.wikipedia.org/wiki/Predictive_maintenance)
+
+[^23]: [Reference](https://en.wikipedia.org/wiki/Capacity_planning)
+
+[^24]: [Reference](https://en.wikipedia.org/wiki/Autoregressive_integrated_moving_average)
+
+[^25]: [Reference](https://en.wikipedia.org/wiki/Vector_autoregression)
+
+[^26]: [Reference](https://en.wikipedia.org/wiki/Moving_average)
+
+[^27]: [Reference](https://en.wikipedia.org/wiki/Program_optimization)
+
+[^28]: [Reference](https://en.wikipedia.org/wiki/Idle_\(CPU\))
+
+[^29]: [Reference](https://en.wikipedia.org/wiki/Scheduling_\(computing\))
+
+[^30]: [Reference](https://en.wikipedia.org/wiki/Context_switch)
+
+[^31]: [Reference](https://en.wikipedia.org/wiki/Load_balancing_\(computing\))
