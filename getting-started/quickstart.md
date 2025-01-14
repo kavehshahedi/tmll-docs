@@ -388,3 +388,255 @@ change_points = cpa.get_change_points(n_change_points=2, tune_hyperparameters=Tr
 <figure><img src="../.gitbook/assets/change_point_voting.png" alt=""><figcaption><p>Top-2 significant change points the aggregation of metrics using Voting.</p></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/change_point_pca.png" alt=""><figcaption><p>Top-2 significant change points the aggregation of metrics using PCA.</p></figcaption></figure>
+
+## Predictive Maintenance
+
+The future characteristics of a system often depend on its historical behavior. By leveraging this historical data, it becomes possible to predict various aspects of the system's future, helping to prevent unexpected issues. This group includes features such as forecasting upcoming resource usage, building performance models to detect regressions, creating alarm systems, and more.
+
+### Capacity Planning (Forecasting)
+
+The performance characteristics of system resources (i.e., CPU, memory, and disk usage) are fundamental to the overall system performance. These characteristics must remain stable, as unexpected increases in resource usage can lead to performance regressions. This module is designed to forecast the future usage of various system resources based on their historical observations and report any violations to you.
+
+#### Initializing the Module
+
+```python
+# Import the module
+from tmll.ml.modules.predictive_maintenance.capacity_planning_module import CapacityPlanning
+
+# Initialize the module
+# You don't need to specify outputs for this module as it automatically fetches CPU, memory, and disk usage
+cp = CapacityPlanning(client, experiment)
+```
+
+#### Forecasting the Resources Usage
+
+To forecast different system components (e.g., CPU, memory, and disk usage), you can optionally specify custom threshold values for each resource. These thresholds define the maximum acceptable usage for each resource. If the forecast predicts usage exceeding the threshold, the module will flag it as a violation. If this violation persists beyond a defined time period (e.g., 10 ms, 15 minutes, 1 hour, etc.), it will be raised as an alarm. You can choose from various forecasting methods, including AutoRegressive Integrated Moving Average (ARIMA), Vector AutoRegressive (VAR), or Moving Average.
+
+```python
+forecasts = cp.forecast_capacity(method="moving_average", # Which method to use
+                           warning_period='50ms', # Mark as an alarm if exceeds the threshold beyond this period
+                           forecast_steps=1000, # How many steps (time units) to forecast
+                           disk_threshold=275*1024*1024,  # 275MB/s
+                           memory_threshold=1024*1024*1024,  # 1GB
+                           cpu_threshold=130)  # 130% (i.e., for 2 cores)
+```
+
+#### Plotting the Forecasts
+
+```python
+cp.plot_capacity_forecast(forecasts, zoomed=False) # Set True to focus more on forecasts
+```
+
+<figure><img src="../.gitbook/assets/capacity_planning_cpu.png" alt=""><figcaption><p>Forecasting CPU usage using the Moving Average method reveals a time period where usage exceeds the threshold of 130% for more than 50 milliseconds.</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/capacity_planning_memory.png" alt=""><figcaption><p>The memory usage forecast does not indicate any problematic timestamps.</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/capacity_planning_disk.png" alt=""><figcaption><p>There is a time period where disk usage is forecasted to exceed the threshold of 275 MB/s for more than 50 milliseconds.</p></figcaption></figure>
+
+#### Interpreting the Results
+
+Interpreting the forecast itself is relatively straightforward. However, conducting a more detailed and precise analysis can be challenging, as it requires considering multiple factors, such as the number of violations, the duration of each violation, and the recommended optimizations or actions to take. With this module's interpretation feature, you can access all this information for each metric (e.g., CPU or memory).
+
+```python
+cp.interpret(forecasts)
+```
+
+```
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│                      Capacity Planning Analysis Results                      │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│                            CPU Capacity Analysis                             │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Analysis Parameters ────────────────────────────────────────────────────────╮
+│                                                                              │
+│ Analysis Period Start: 2024-04-24 02:13:11.827000                            │
+│ Analysis Period End  : 2024-04-24 02:13:12.826000                            │
+│ Forecast Method      : MOVING_AVERAGE                                        │
+│ CPU Threshold        : 130.00%                                               │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Resource: CPU Usage ────────────────────────────────────────────────────────╮
+│                                                                              │
+│ Current Usage           : 100.00%                                            │
+│ Peak Usage              : 200.00%                                            │
+│ Average Usage           : 121.77%                                            │
+│ Utilization Pattern     : Moderate variation                                 │
+│ Next Threshold Violation: 2024-04-24 02:13:12.101000                         │
+│ Total Violations        : 7                                                  │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+                     Top Threshold Violations for CPU Usage                     
+╭────────────────────────┬────────────────────────┬──────────┬─────────────────╮
+│                        │                        │          │                 │
+│ Start                  │End                     │Duration  │Forecasted Usage │
+├────────────────────────┼────────────────────────┼──────────┼─────────────────┤
+│                        │                        │          │                 │
+│ 2024-04-24             │2024-04-24              │250.00 ms │200.00%          │
+│ 02:13:12.101000        │02:13:12.351000         │          │                 │
+│                        │                        │          │                 │
+│ 2024-04-24             │2024-04-24              │39.00 ms  │200.00%          │
+│ 02:13:12.701000        │02:13:12.740000         │          │                 │
+│                        │                        │          │                 │
+│ 2024-04-24             │2024-04-24              │26.00 ms  │200.00%          │
+│ 02:13:12.800000        │02:13:12.826000         │          │                 │
+│                        │                        │          │                 │
+│ 2024-04-24             │2024-04-24              │20.00 ms  │199.14%          │
+│ 02:13:11.827000        │02:13:11.847000         │          │                 │
+│                        │                        │          │                 │
+│ 2024-04-24             │2024-04-24              │5.00 ms   │173.68%          │
+│ 02:13:12.785000        │02:13:12.790000         │          │                 │
+│                        │                        │          │                 │
+╰────────────────────────┴────────────────────────┴──────────┴─────────────────╯
+```
+
+```
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│                           MEMORY Capacity Analysis                           │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Analysis Parameters ────────────────────────────────────────────────────────╮
+│                                                                              │
+│ Analysis Period Start: 2024-04-24 02:13:11.827000                            │
+│ Analysis Period End  : 2024-04-24 02:13:12.826000                            │
+│ Forecast Method      : MOVING_AVERAGE                                        │
+│ MEMORY Threshold     : 1.00GB                                                │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Resource: Memory Usage ─────────────────────────────────────────────────────╮
+│                                                                              │
+│ Current Usage      : 647.77MB                                                │
+│ Peak Usage         : 650.94MB                                                │
+│ Average Usage      : 509.47MB                                                │
+│ Utilization Pattern: Moderate variation                                      │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│                            DISK Capacity Analysis                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Analysis Parameters ────────────────────────────────────────────────────────╮
+│                                                                              │
+│ Analysis Period Start: 2024-04-24 02:13:11.827000                            │
+│ Analysis Period End  : 2024-04-24 02:13:12.826000                            │
+│ Forecast Method      : MOVING_AVERAGE                                        │
+│ DISK Threshold       : 275.00MB/s                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Resource: Disk I/O View ────────────────────────────────────────────────────╮
+│                                                                              │
+│ Current Usage           : 0.00B/s                                            │
+│ Peak Usage              : 470.12MB/s                                         │
+│ Average Usage           : 57.31MB/s                                          │
+│ Utilization Pattern     : Highly variable                                    │
+│ Next Threshold Violation: 2024-04-24 02:13:12.104000                         │
+│ Total Violations        : 5                                                  │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+                   Top Threshold Violations for Disk I/O View                   
+╭─────────────────────────┬────────────────────────┬─────────┬─────────────────╮
+│                         │                        │         │                 │
+│ Start                   │End                     │Duration │Forecasted Usage │
+├─────────────────────────┼────────────────────────┼─────────┼─────────────────┤
+│                         │                        │         │                 │
+│ 2024-04-24              │2024-04-24              │92.00 ms │362.87MB/s       │
+│ 02:13:12.104000         │02:13:12.196000         │         │                 │
+│                         │                        │         │                 │
+│ 2024-04-24              │2024-04-24              │33.00 ms │328.86MB/s       │
+│ 02:13:12.788000         │02:13:12.821000         │         │                 │
+│                         │                        │         │                 │
+│ 2024-04-24              │2024-04-24              │31.00 ms │381.01MB/s       │
+│ 02:13:12.209000         │02:13:12.240000         │         │                 │
+│                         │                        │         │                 │
+│ 2024-04-24              │2024-04-24              │1.00 ms  │281.15MB/s       │
+│ 02:13:12.749000         │02:13:12.750000         │         │                 │
+│                         │                        │         │                 │
+╰─────────────────────────┴────────────────────────┴─────────┴─────────────────╯
+```
+
+```
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│                      Capacity Planning Recommendations                       │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Immediate Actions ──────────────────────────────────────────────────────────╮
+│                                                                              │
+│ 1: Critical: CPU Usage will exceed 130.00% in 275.00 ms. Consider immediate  │
+│ load balancing or scaling up CPU capacity.                                   │
+│ 2: Critical: Disk I/O View will exceed 275.00MB/s in 278.00 ms. Consider     │
+│ cleanup or adding storage capacity.                                          │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Short-term Planning ────────────────────────────────────────────────────────╮
+│                                                                              │
+│ 1: Resource utilization is within acceptable limits. No immediate action     │
+│ required.                                                                    │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Long-term Strategy ─────────────────────────────────────────────────────────╮
+│                                                                              │
+│ 1: CPU Usage has peak usage (200.00%) approaching or bypassing the threshold │
+│ (130.00%). Consider increasing capacity or implementing load balancing.      │
+│ 2: Disk I/O View shows highly variable usage patterns. Consider implementing │
+│ auto-scaling or dynamic resource allocation.                                 │
+│ 3: Disk I/O View has peak usage (470.12MB/s) approaching or bypassing the    │
+│ threshold (275.00MB/s). Consider increasing capacity or implementing load    │
+│ balancing.                                                                   │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Optimization Opportunities ─────────────────────────────────────────────────╮
+│                                                                              │
+│ 1: Resource utilization is within acceptable limits. No immediate action     │
+│ required.                                                                    │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
