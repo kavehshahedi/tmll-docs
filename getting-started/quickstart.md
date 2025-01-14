@@ -640,3 +640,378 @@ cp.interpret(forecasts)
 │                                                                              │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
+
+## Resource Optimization
+
+System resources such as CPU, memory, and disk I/O are fundamental components that directly impact overall system performance. Inefficient resource utilization can lead to various issues, including performance bottlenecks, increased latency, and unnecessary costs. The modules in this group help identify underutilized resources and provide optimization recommendations to improve system efficiency. This includes analyzing idle periods of different resources, detecting load imbalances, and more.
+
+### Idle Resource Detection
+
+Each system resource may experience idle periods, which are generally normal. However, if these idle periods exceed a specific duration, it may indicate that the resources are underutilized and could require adjustments. This module analyzes the idle status of each system resource individually and provides a more detailed analysis of CPU scheduling.
+
+#### Initializing the Module
+
+```python
+# Import the module
+from tmll.ml.modules.resource_optimization.idle_resource_detection_module import IdleResourceDetection
+
+# Find the outputs for CPU, memory, and disk usage
+outputs = experiment.find_outputs(match_any=True, keyword=['cpu usage', 'memory usage', 'disk'], type=['xy'])
+# Also find the outputs for Resources, so we can analyze CPU scheduling
+outputs.extend(experiment.find_outputs(match_any=True, keyword=['resources'], type=['time_graph']))
+
+# Initialize the module
+ird = IdleResourceDetection(client, experiment, outputs)
+```
+
+#### Indicating Idle Resources
+
+You can define specific thresholds for each resource (i.e., CPU, memory, and disk usage) as well as a threshold for idle time, which indicates an idle period when resource usage remains below the defined threshold for a specified duration.
+
+```python
+res_idle = ird.analyze_idle_resources(idle_time='750ms',  # 750ms idle time
+                                      cpu_idle_threshold=130,  # 130% (i.e., for 2 cores)
+                                      disk_idle_threshold=275*1024*1024,  # 275MB/s
+                                      memory_idle_threshold=600*1024*1024)  # 600MB
+```
+
+#### Plotting the Idle Resources Results
+
+```python
+ird.plot_resource_utilization(res_idle)
+```
+
+<figure><img src="../.gitbook/assets/idle_resource_cpu.png" alt=""><figcaption><p>The CPU utilization over time, highlighting one idle period lasting more than 750 milliseconds.</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/idle_resource_memory.png" alt=""><figcaption><p>The memory usage over time, highlighting one idle period lasting more than 750 milliseconds.</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/idle_resource_disk.png" alt=""><figcaption><p>The disk usage over time, highlighting one idle period lasting more than 750 milliseconds.</p></figcaption></figure>
+
+#### Analyzing CPU Scheduling
+
+In addition to general idle resource analysis, this module provides a detailed analysis of CPU scheduling, offering insights into the characteristics of each CPU core. You can identify the most resource-intensive processes or tasks on each core, the number of context switches performed, how load balancing was managed among the cores, and more.
+
+```python
+res_sched = ird.analyze_cpu_scheduling()
+```
+
+#### Plotting the CPU Scheduling Results
+
+```python
+ird.plot_cpu_scheduling(res_sched)
+```
+
+<figure><img src="../.gitbook/assets/idle_resource_cpu_heatmap.png" alt=""><figcaption><p>The CPU utilization heatmap for each core over time illustrates how load balancing is managed across the cores.</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/idle_resource_cpu_sched_core_1_tasks.png" alt=""><figcaption><p>The most resource-intensive tasks on the first CPU core over time.</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/idle_resource_cpu_sched_core_1_dist.png" alt=""><figcaption><p>The usage distribution of the top 25 tasks on the first CPU core, expressed as a percentage of total usage.</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/idle_resource_cpu_sched_core_2_tasks.png" alt=""><figcaption><p>The most resource-intensive tasks on the second CPU core over time.</p></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/idle_resource_cpu_sched_core_2_dist.png" alt=""><figcaption><p>The usage distribution of the top 25 tasks on the second CPU core, expressed as a percentage of total usage.</p></figcaption></figure>
+
+#### Interpreting the Results
+
+You can access detailed information about each resource, as well as CPU scheduling results, using the interpretation method. Based on these results, the method also provides various optimization recommendations to help you improve the efficiency of the system's resources.
+
+```python
+ird.interpret(res_idle, res_sched)
+```
+
+```
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│                   Idle Resource Detection Analysis Results                   │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Overall Resources Utilization ──────────────────────────────────────────────╮
+│                                                                              │
+│ CPU Average Usage         : 121.77%                                          │
+│ CPU Monitoring Duration   : 2.24s                                            │
+│ MEMORY Average Usage      : 509.47MB                                         │
+│ MEMORY Monitoring Duration: 2.24s                                            │
+│ DISK Average Usage        : 57.31MB/s                                        │
+│ DISK Monitoring Duration  : 2.24s                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│                            CPU Resource Analysis                             │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Analysis Parameters ────────────────────────────────────────────────────────╮
+│                                                                              │
+│ Analysis Period Start: 2024-04-24 02:13:09.586000                            │
+│ Analysis Period End  : 2024-04-24 02:13:11.826000                            │
+│ CPU Idle Threshold   : 130.00%                                               │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Resource: CPU Usage ────────────────────────────────────────────────────────╮
+│                                                                              │
+│ Average Usage         : 121.77%                                              │
+│ Peak Usage            : 200.00%                                              │
+│ Idle Time Percentage  : 44.0%                                                │
+│ Total Duration        : 2.24s                                                │
+│ Usage Pattern         : Moderate variation                                   │
+│ Number of Idle Periods: 1                                                    │
+│ Longest Idle Period   : 0.98s                                                │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+                         Top Idle Periods for CPU Usage                         
+╭─────────────────────────────────┬────────────────────────────────┬───────────╮
+│                                 │                                │           │
+│ Start Time                      │End Time                        │Duration   │
+├─────────────────────────────────┼────────────────────────────────┼───────────┤
+│                                 │                                │           │
+│ 2024-04-24 02:13:09.703000      │2024-04-24 02:13:10.688000      │985.00 ms  │
+│                                 │                                │           │
+╰─────────────────────────────────┴────────────────────────────────┴───────────╯
+```
+
+```
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│                           MEMORY Resource Analysis                           │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Analysis Parameters ────────────────────────────────────────────────────────╮
+│                                                                              │
+│ Analysis Period Start: 2024-04-24 02:13:09.586000                            │
+│ Analysis Period End  : 2024-04-24 02:13:11.826000                            │
+│ MEMORY Idle Threshold: 600.00MB                                              │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Resource: Memory Usage ─────────────────────────────────────────────────────╮
+│                                                                              │
+│ Average Usage         : 509.47MB                                             │
+│ Peak Usage            : 650.94MB                                             │
+│ Idle Time Percentage  : 52.5%                                                │
+│ Total Duration        : 2.24s                                                │
+│ Usage Pattern         : Moderate variation                                   │
+│ Number of Idle Periods: 1                                                    │
+│ Longest Idle Period   : 1.18s                                                │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+                       Top Idle Periods for Memory Usage                        
+╭──────────────────────────────────┬────────────────────────────────┬──────────╮
+│                                  │                                │          │
+│ Start Time                       │End Time                        │Duration  │
+├──────────────────────────────────┼────────────────────────────────┼──────────┤
+│                                  │                                │          │
+│ 2024-04-24 02:13:09.586000       │2024-04-24 02:13:10.763000      │1.18 s    │
+│                                  │                                │          │
+╰──────────────────────────────────┴────────────────────────────────┴──────────╯
+```
+
+```
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│                            DISK Resource Analysis                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Analysis Parameters ────────────────────────────────────────────────────────╮
+│                                                                              │
+│ Analysis Period Start: 2024-04-24 02:13:09.586000                            │
+│ Analysis Period End  : 2024-04-24 02:13:11.826000                            │
+│ DISK Idle Threshold  : 275.00MB/s                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Resource: Disk I/O View ────────────────────────────────────────────────────╮
+│                                                                              │
+│ Average Usage         : 57.31MB/s                                            │
+│ Peak Usage            : 470.12MB/s                                           │
+│ Idle Time Percentage  : 55.7%                                                │
+│ Total Duration        : 2.24s                                                │
+│ Usage Pattern         : Highly variable                                      │
+│ Number of Idle Periods: 1                                                    │
+│ Longest Idle Period   : 1.25s                                                │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+                       Top Idle Periods for Disk I/O View                       
+╭──────────────────────────────────┬────────────────────────────────┬──────────╮
+│                                  │                                │          │
+│ Start Time                       │End Time                        │Duration  │
+├──────────────────────────────────┼────────────────────────────────┼──────────┤
+│                                  │                                │          │
+│ 2024-04-24 02:13:09.586000       │2024-04-24 02:13:10.833000      │1.25 s    │
+│                                  │                                │          │
+╰──────────────────────────────────┴────────────────────────────────┴──────────╯
+```
+
+```
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│                           CPU Scheduling Analysis                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Overall Scheduling Metrics ─────────────────────────────────────────────────╮
+│                                                                              │
+│ Total CPUs            : 2                                                    │
+│ Total Context Switches: 2,824                                                │
+│ Total Unique Tasks    : 83                                                   │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ CPU 1 Scheduling Metrics ───────────────────────────────────────────────────╮
+│                                                                              │
+│ CPU Utilization       : 94.8%                                                │
+│ Context Switches/s    : 921.6                                                │
+│ Unique Tasks          : 36                                                   │
+│ Active/Idle Samples   : 2,826/155                                            │
+│ Number of Idle Periods: 117                                                  │
+│ Average Idle Period   : 132.48 us                                            │
+│ Longest Idle Period   : 800.00 us                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+                              Top Tasks for CPU 1                               
+╭─────────────────────────────────────────────────┬────────────────────────────╮
+│                                                 │                            │
+│ Task                                            │Active Time %               │
+├─────────────────────────────────────────────────┼────────────────────────────┤
+│                                                 │                            │
+│ ssh (34286)                                     │55.7%                       │
+│                                                 │                            │
+│ kworker/u4:1 (27955)                            │33.2%                       │
+│                                                 │                            │
+│ lttng-consumerd (1781)                          │3.5%                        │
+│                                                 │                            │
+│ Application not (749)                           │1.3%                        │
+│                                                 │                            │
+│ rcu_sched (14)                                  │1.0%                        │
+│                                                 │                            │
+╰─────────────────────────────────────────────────┴────────────────────────────╯
+```
+
+```
+╭─ CPU 2 Scheduling Metrics ───────────────────────────────────────────────────╮
+│                                                                              │
+│ CPU Utilization       : 82.0%                                                │
+│ Context Switches/s    : 340.2                                                │
+│ Unique Tasks          : 47                                                   │
+│ Active/Idle Samples   : 1,700/373                                            │
+│ Number of Idle Periods: 319                                                  │
+│ Average Idle Period   : 116.93 us                                            │
+│ Longest Idle Period   : 1.50 ms                                              │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+                              Top Tasks for CPU 2                               
+╭─────────────────────────────────────────────────┬────────────────────────────╮
+│                                                 │                            │
+│ Task                                            │Active Time %               │
+├─────────────────────────────────────────────────┼────────────────────────────┤
+│                                                 │                            │
+│ lttng-consumerd (1782)                          │67.6%                       │
+│                                                 │                            │
+│ kworker/u4:1 (27955)                            │12.8%                       │
+│                                                 │                            │
+│ ssh-ust (34287)                                 │2.8%                        │
+│                                                 │                            │
+│ kworker/u4:4 (17233)                            │2.2%                        │
+│                                                 │                            │
+│ systemd (1)                                     │1.8%                        │
+│                                                 │                            │
+╰─────────────────────────────────────────────────┴────────────────────────────╯
+```
+
+```
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│                    Resource Optimization Recommendations                     │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Workload Distribution ──────────────────────────────────────────────────────╮
+│                                                                              │
+│ 1: Consider consolidating workloads on the following CPUs:                   │
+│   • CPU Usage (44.0% idle)                                                   │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Resource Utilization ───────────────────────────────────────────────────────╮
+│                                                                              │
+│ 1: Peak CPU usage exceeds 90% on:                                            │
+│   • CPU Usage (200.0%)                                                       │
+│ Consider implementing load balancing or scaling resources                    │
+│ 2: Memory allocation could be optimized for:                                 │
+│   • Memory Usage (Using 509.47 MB, 52.5% idle)                               │
+│ 3: High CPU utilization detected:                                            │
+│   • CPU 1 (94.8%)                                                            │
+│   • CPU 2 (82.0%)                                                            │
+│ Recommended actions:                                                         │
+│   - Implement dynamic load balancing                                         │
+│   - Configure task prioritization                                            │
+│   - Consider resource scaling                                                │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ Performance Optimization ───────────────────────────────────────────────────╮
+│                                                                              │
+│ 1: High context switch rates detected:                                       │
+│   • CPU 1 (921.6/s)                                                          │
+│   • CPU 2 (340.2/s)                                                          │
+│ Recommended actions:                                                         │
+│   - Review task scheduling policy                                            │
+│   - Implement task affinity                                                  │
+│   - Adjust time slice duration                                               │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+```
+╭─ System Configuration ───────────────────────────────────────────────────────╮
+│                                                                              │
+│ 1: Everything looks good! No specific recommendations at this time.          │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
