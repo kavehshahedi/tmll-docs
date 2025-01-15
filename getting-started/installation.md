@@ -1,6 +1,6 @@
 ---
-description: Here, we provide the required steps in order to install TMLL on your machine.
 icon: folder-arrow-down
+description: Here, we provide the required steps in order to install TMLL on your machine.
 ---
 
 # Installation
@@ -19,7 +19,7 @@ If you are eager to install TMLL with its latest changes in its repository, you 
 
 ```bash
 # Clone TMLL from Git
-git clone https://github.com/kavehshahedi/tmll.git
+git clone https://github.com/eclipse-tracecompass/tmll.git
 cd tmll
 
 # Clone its submodule(s)
