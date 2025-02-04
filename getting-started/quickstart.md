@@ -39,7 +39,7 @@ The primary input for TMLL consists of trace files. Assuming you have already co
 experiment = client.create_experiment(traces=[
     {
         "path": "/path/to/the/first/trace", # Required
-        "name": "your_custom_name" # Optional. If absent, a random name would be assigned
+        "name": "your_custom_name" # Optional. If absent, a default name would be assigned
     },
     {
         "path": "/path/to/the/second/trace"

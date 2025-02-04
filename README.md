@@ -40,11 +40,13 @@ from tmll.ml.modules.anomaly_detection.anomaly_detection_module import AnomalyDe
 ad = AnomalyDetection(client, experiment, outputs) # Check the Quickstart page to see what are these variables
 
 # Find anomalies using a custom method and parameters
-anomalies = ad.find_anomalies(method='iforest', window_size=100)
+anomalies = ad.find_anomalies(method='zscore', zscore_threshold=3)
 
 # Plot the anomalies
 ad.plot_anomalies(anomalies, plot_size=(15,8))
 ```
+
+<figure><img src=".gitbook/assets/anomaly_detection_combined_pca.png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -64,6 +66,8 @@ leaks = mld.analyze_memory_leaks()
 # Plot the memory leaks
 mld.plot_memory_leaks_analysis(leaks)
 ```
+
+<figure><img src=".gitbook/assets/memory_operations.png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 
 {% tab title="Root Cause Analysis" %}
@@ -83,6 +87,8 @@ correlations = ca.analyze_correlations()
 # Plot the correlation matrix
 ca.plot_correlation_matrix(correlations)
 ```
+
+<figure><img src=".gitbook/assets/correlation_analysis_correlation_matrix.png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 
 {% tab title="Performance Trend Analysis" %}
@@ -102,6 +108,8 @@ change_points = cpa.get_change_points(n_change_points=2, methods=['voting', 'pca
 # Plot the change points
 cpa.plot_change_points(change_points)
 ```
+
+<figure><img src=".gitbook/assets/change_point_pca.png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 
 {% tab title="Predictive Maintenance" %}
@@ -121,6 +129,8 @@ forecasts = cp.forecast_capacity(method='ARIMA', resource_types=['CPU', 'DISK'])
 # Plot the forecasts along with the original data
 cp.plot_capacity_forecast(forecasts)
 ```
+
+<figure><img src=".gitbook/assets/capacity_planning_disk.png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 
 {% tab title="Resource Optimization" %}
@@ -140,5 +150,8 @@ idle_resources = ird.analyze_idle_resources(resource_types=['CPU', 'MEMORY'], cp
 # Plot the resource utilization with their idle periods (if any)
 ird.plot_resource_utilization(idle_resources)
 ```
+
+<figure><img src=".gitbook/assets/idle_resource_cpu.png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 {% endtabs %}
+
